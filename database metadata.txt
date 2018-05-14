@@ -1,0 +1,61 @@
+Adv java[JDBC]
+----------------------
+Example on DatabaseMetaData
+
+db.properties
+------------------
+driver_Class = oracle.jdbc.OracleDriver
+driver_URL = jdbc:oracle:thin:@localhost:1521:xe
+db_User_Name = system
+db_Password = durga
+
+JdbcApp18.java
+-----------------------
+package com.durgasoft.jdbc;
+
+import java.io.FileInputStream;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.util.Properties;
+
+public class JdbcApp18 {
+
+public static void main(String[] args) {
+FileInputStream fis = null;
+Connection con = null;
+
+try {
+fis = new FileInputStream("D:/Adv730/jdbc/eclipse/jdbcapp18/src/db.properties");
+Properties p = new Properties();
+p.load(fis);
+String driver_Class = p.getProperty("driver_Class");
+String driver_URL = p.getProperty("driver_URL");
+String db_User_Name = p.getProperty("db_User_Name");
+String db_Password = p.getProperty("db_Password");
+Class.forName(driver_Class);
+con = DriverManager.getConnection(driver_URL, db_User_Name, db_Password);
+DatabaseMetaData md = con.getMetaData();
+System.out.println(md.getDatabaseProductName());
+System.out.println(md.getDatabaseProductVersion());
+System.out.println(md.getDriverMajorVersion());
+System.out.println(md.getDriverMinorVersion());
+System.out.println(md.getSQLKeywords());
+System.out.println(md.getStringFunctions());
+System.out.println(md.getNumericFunctions());
+System.out.println(md.supportsBatchUpdates());
+System.out.println(md.supportsStoredProcedures());
+} catch (Exception e) {
+e.printStackTrace();
+}finally {
+try {
+con.close();
+} catch (Exception e) {
+e.printStackTrace();
+}
+}
+
+
+}
+
+}
