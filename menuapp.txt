@@ -1,0 +1,251 @@
+ADV JAVA[JDBC]
+-------------------------
+Menu kind of Application to perform all JDBC Applications:
+
+JdbcApp25.java
+---------------
+package com.durgasoft.test;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import com.durgasoft.dto.Student;
+import com.durgasoft.services.StudentService;
+
+public class JdbcApp25 {
+
+public static void main(String[] args) {
+BufferedReader br = null;
+try {
+StudentService stdService = new StudentService();
+br = new BufferedReader(new InputStreamReader(System.in));
+while(true) {
+System.out.println("1.Add Student");
+System.out.println("2.Search Student");
+System.out.println("3.Update Student");
+System.out.println("4.Delete Student");
+System.out.println("5.Exit");
+System.out.print("Your Option :");
+int option = Integer.parseInt(br.readLine());
+String sid="", sname="", saddr="";
+Student std = null;
+switch (option) {
+case 1:
+System.out.println("Student ADD Module");
+System.out.println("---------------------");
+System.out.print("Student Id :");
+sid = br.readLine();
+System.out.print("Student Name :");
+sname = br.readLine();
+System.out.print("Student Address:");
+saddr = br.readLine();
+String status = stdService.add(sid, sname, saddr);
+if(status.equals("success")) {
+System.out.println("Student Inserted Successfully");
+}
+if(status.equals("failure")) {
+System.out.println("Student Insertion Failure");
+}
+if(status.equals("existed")) {
+System.out.println("Student Existed Already");
+}
+System.out.println();
+break;
+case 2:
+System.out.println("Student SEARCH Module");
+System.out.println("------------------------");
+System.out.print("Student Id :");
+sid = br.readLine();
+std = stdService.search(sid);
+if(std == null) {
+System.out.println("Student Not Existed ");
+}else {
+System.out.println("Student Details");
+System.out.println("-------------------");
+System.out.println("Student Id :"+std.getSid());
+System.out.println("Student Name :"+std.getSname());
+System.out.println("Student Address :"+std.getSaddr());
+}
+System.out.println();
+break;
+case 3:
+System.out.println("Student UPDATE Module");
+System.out.println("------------------------");
+System.out.print("Student Id :");
+sid = br.readLine();
+std = stdService.search(sid);
+if(std == null){
+System.out.println("Student Not Existed");
+}else {
+System.out.print("Student Name Old Value:"+std.getSname()+" New Value :");
+sname = br.readLine();
+if(sname == null || sname.equals("")) {
+sname = std.getSname();
+}
+System.out.print("Student Address Old Value:"+std.getSaddr()+" New Value :");
+saddr = br.readLine();
+if(saddr == null || saddr.equals("")) {
+saddr = std.getSaddr();
+}
+status = stdService.update(sid, sname, saddr);
+if(status.equals("success")) {
+System.out.println("Student Updated Successfully");
+}
+if(status.equals("failure")) {
+System.out.println("Student Updations Failure");
+}
+}
+System.out.println();
+break;
+case 4:
+System.out.println("Student DELETE Module");
+System.out.println("-------------------------");
+System.out.print("Student Id :");
+sid = br.readLine();
+status = stdService.delete(sid);
+if(status.equals("notexisted")) {
+System.out.println("STudent Not Existed");
+}
+if(status.equals("success")) {
+System.out.println("Student Deleted Successfully");
+}
+if(status.equals("failure")) {
+System.out.println("Student Updation Failure");
+}
+System.out.println();
+break;
+case 5:
+System.out.println("***Thank You for using Student Application******");
+System.exit(0);
+break;
+default:
+System.out.println("Provide value between 1,2,3,4 and 5");
+break;
+}
+}
+} catch (Exception e) {
+e.printStackTrace();
+}
+
+}
+
+}
+
+StudentService.java
+--------------------
+package com.durgasoft.services;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import com.durgasoft.dto.Student;
+
+public class StudentService {
+Connection con;
+Statement st;
+ResultSet rs;
+Student std;
+String status ="";
+public StudentService() {
+try {
+Class.forName("com.mysql.jdbc.Driver");
+con = DriverManager.getConnection("jdbc:mysql://localhost:3306/durgadb", "root", "root");
+st = con.createStatement();
+} catch (Exception e) {
+e.printStackTrace();
+}
+}
+public String add(String sid, String sname, String saddr) {
+try {
+rs = st.executeQuery("select * from student where sid='"+sid+"'");
+boolean b = rs.next();
+if(b == true) {
+status = "existed";
+}else {
+st.executeUpdate("insert into student values('"+sid+"','"+sname+"','"+saddr+"')");
+status = "success";
+}
+} catch (Exception e) {
+status = "failure";
+e.printStackTrace();
+}
+return status;
+}
+public Student search(String sid) {
+try {
+rs = st.executeQuery("select * from student where sid='"+sid+"'");
+boolean b = rs.next();
+if(b == true) {
+std = new Student();
+std.setSid(rs.getString("SID"));
+std.setSname(rs.getString("SNAME"));
+std.setSaddr(rs.getString("SADDR"));
+}else {
+std = null;
+}
+} catch (Exception e) {
+e.printStackTrace();
+}
+return std;
+}
+public String update(String sid, String sname, String saddr) {
+try {
+st.executeUpdate("update student set sname='"+sname+"',saddr='"+saddr+"' where sid='"+sid+"'");
+status = "success";
+} catch (Exception e) {
+status = "failure";
+e.printStackTrace();
+}
+return status;
+}
+public String delete(String sid) {
+try {
+rs = st.executeQuery("select * from student where sid='"+sid+"'");
+boolean b = rs.next();
+if(b == true) {
+st.executeUpdate("delete from student where sid='"+sid+"'");
+status = "success";
+}else {
+status = "notexisted";
+}
+} catch (Exception e) {
+status = "failure";
+e.printStackTrace();
+}
+return status;
+}
+
+}
+
+Student.java
+------------
+package com.durgasoft.dto;
+
+public class Student {
+private String sid;
+private String sname;
+private String saddr;
+
+public String getSid() {
+return sid;
+}
+public void setSid(String sid) {
+this.sid = sid;
+}
+public String getSname() {
+return sname;
+}
+public void setSname(String sname) {
+this.sname = sname;
+}
+public String getSaddr() {
+return saddr;
+}
+public void setSaddr(String saddr) {
+this.saddr = saddr;
+}
+
+
+}
